@@ -17,7 +17,19 @@
 [python-version]: https://img.shields.io/pypi/pyversions/gym-super-mario-bros.svg
 [python-home]: https://python.org
 
+
 ![Mario](https://user-images.githubusercontent.com/2184469/40949613-7542733a-6834-11e8-895b-ce1cc3af9dbb.gif)
+
+## Modifications
+This project is a fork of [gym-super-mario-bros](https://github.com/OllieJonas/gym-super-mario-bros), with the following
+modifications:
+
+- Updated reward function
+- Updated to latest version of Gym
+
+The repository can be found [here](https://olliejonas.com/Dissertation/source/gym-super-mario-bros)
+
+CI can be found [here](https://ci.olliejonas.com)
 
 An [OpenAI Gym](https://github.com/openai/gym) environment for
 Super Mario Bros. & Super Mario Bros. 2 (Lost Levels) on The Nintendo

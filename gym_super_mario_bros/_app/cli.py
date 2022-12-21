@@ -7,7 +7,6 @@ from nes_py.app.play_human import play_human
 from nes_py.app.play_random import play_random
 from ..actions import RIGHT_ONLY, SIMPLE_MOVEMENT, COMPLEX_MOVEMENT
 
-
 # a key mapping of action spaces to wrap with
 _ACTION_SPACES = {
     'right': RIGHT_ONLY,
@@ -20,32 +19,32 @@ def _get_args():
     """Parse command line arguments and return them."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--env', '-e',
-        type=str,
-        default='SuperMarioBros-v0',
-        help='The name of the environment to play'
-    )
+                        type=str,
+                        default='SuperMarioBros-v0',
+                        help='The name of the environment to play'
+                        )
     parser.add_argument('--mode', '-m',
-        type=str,
-        default='human',
-        choices=['human', 'random'],
-        help='The execution mode for the emulation'
-    )
+                        type=str,
+                        default='human',
+                        choices=['human', 'random'],
+                        help='The execution mode for the emulation'
+                        )
     parser.add_argument('--actionspace', '-a',
-        type=str,
-        default='nes',
-        choices=['nes', 'right', 'simple', 'complex'],
-        help='the action space wrapper to use'
-    )
+                        type=str,
+                        default='complex',
+                        choices=['nes', 'right', 'simple', 'complex'],
+                        help='the action space wrapper to use'
+                        )
     parser.add_argument('--steps', '-s',
-        type=int,
-        default=500,
-        help='The number of random steps to take.',
-    )
+                        type=int,
+                        default=500,
+                        help='The number of random steps to take.',
+                        )
     parser.add_argument('--stages', '-S',
-        type=str,
-        nargs='+',
-        help='The random stages to sample from for a random stage env'
-    )
+                        type=str,
+                        nargs='+',
+                        help='The random stages to sample from for a random stage env'
+                        )
     # parse arguments and return them
     return parser.parse_args()
 
@@ -58,7 +57,7 @@ def main():
         print('--stages,-S should only be specified for RandomStages environments')
         sys.exit(1)
     # build the environment with the given ID
-    env = gym.make(args.env, stages=args.stages)
+    env = gym.make(args.env)
     # wrap the environment with an action space if specified
     if args.actionspace != 'nes':
         print(args.actionspace)

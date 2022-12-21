@@ -270,7 +270,7 @@ class SuperMarioBrosEnv(NESEnv):
     def _skip_change_area(self):
         """Skip change area animations by by running down timers."""
         change_area_timer = self.ram[0x06DE]
-        if change_area_timer > 1 and change_area_timer < 255:
+        if 1 < change_area_timer < 255:
             self.ram[0x06DE] = 1
 
     def _skip_occupied_states(self):
