@@ -1,5 +1,7 @@
 """An OpenAI Gym environment for Super Mario Bros. and Lost Levels."""
 from collections import defaultdict
+from typing import Optional
+
 from nes_py import NESEnv
 import numpy as np
 from ._roms import decode_target
@@ -7,7 +9,7 @@ from ._roms import rom_path
 
 
 # create a dictionary mapping value of status register to string names
-_STATUS_MAP = defaultdict(lambda: 'fireball', {0:'small', 1: 'tall'})
+_STATUS_MAP = defaultdict(lambda: 'fireball', {0: 'small', 1: 'tall'})
 
 
 # a set of state values indicating that Mario is "busy"
@@ -31,7 +33,7 @@ class SuperMarioBrosEnv(NESEnv):
     # the legal range of rewards for each step
     reward_range = (-15, 15)
 
-    def __init__(self, rom_mode='vanilla', lost_levels=False, target=None):
+    def __init__(self, rom_mode='vanilla', render_mode: Optional[str] = None, lost_levels: bool = False, target=None):
         """
         Initialize a new Super Mario Bros environment.
 
@@ -49,7 +51,7 @@ class SuperMarioBrosEnv(NESEnv):
         # decode the ROM path based on mode and lost levels flag
         rom = rom_path(lost_levels, rom_mode)
         # initialize the super object with the ROM path
-        super(SuperMarioBrosEnv, self).__init__(rom)
+        super(SuperMarioBrosEnv, self).__init__(rom, render_mode=render_mode)
         # set the target world, stage, and area variables
         target = decode_target(target, lost_levels)
         self._target_world, self._target_stage, self._target_area = target
