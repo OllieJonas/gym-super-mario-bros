@@ -175,7 +175,7 @@ class SuperMarioBrosEnv(NESEnv):
         """Return the current vertical position."""
         # check if Mario is above the viewport (the score board area)
         if self._y_viewport < 1:
-            # y position overflows so we start from 255 and add the offset
+            # y position overflows, so we start from 255 and add the offset
             return 255 + (255 - self._y_pixel)
         # invert the y pixel into the distance from the bottom of the screen
         return 255 - self._y_pixel
@@ -368,19 +368,15 @@ class SuperMarioBrosEnv(NESEnv):
         self._time_last = self._time
         self._x_position_last = self._x_position
 
-    def _did_step(self, done):
+    def _did_step(self, terminated, truncated):
         """
         Handle any RAM hacking after a step occurs.
-
-        Args:
-            done: whether the done flag is set to true
-
         Returns:
             None
 
         """
-        # if done flag is set a reset is incoming anyway, ignore any hacking
-        if done:
+        # if terminated / truncated flag is set a reset is incoming anyway, ignore any hacking
+        if terminated or truncated:
             return
         # if mario is dying, then cut to the chase and kill hi,
         if self._is_dying:
@@ -398,11 +394,15 @@ class SuperMarioBrosEnv(NESEnv):
         """Return the reward after a step occurs."""
         return self._x_reward + self._time_penalty + self._death_penalty
 
-    def _get_done(self):
+    def _get_terminated(self):
         """Return True if the episode is over, False otherwise."""
         if self.is_single_stage_env:
             return self._is_dying or self._is_dead or self._flag_get
         return self._is_game_over
+
+    def _get_truncated(self):
+        """TODO: Maybe add time limit?"""
+        return False
 
     def _get_info(self):
         """Return the info after a step occurs"""
