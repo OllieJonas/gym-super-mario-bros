@@ -80,7 +80,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
                 stage_dict.setdefault(k, []).append(v)
 
         # convert integers to envs
-        stage_dict = {k: gym.make(f"SuperMarioBros-{k}-{v}-v{self.rom_mode}", render_mode=self.render_mode)
+        stage_dict = {k: [gym.make(f"SuperMarioBros-{k}-{i}-v{self.rom_mode}", render_mode=self.render_mode) for i in v]
                       for k, v in stage_dict.items()}
 
         # flatten dict to 1d arr (easier to work with)
