@@ -67,7 +67,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
 
         # if stages is None, then assume select from any stage - return all stages (worlds 1 to 8, stages 1 to 4)
         if not stages:
-            stage_dict = {str(i): list(map(lambda x: str(x), range(1, 5))) for i in range(1, 9)}
+            stage_dict = {i: list(range(1, 5)) for i in range(1, 9)}
 
         else:
             # convert stages from str to tuple. e.g.: ['1-1', '1-2'] -> [(1, 1), (1,2)]
@@ -77,7 +77,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
 
             # convert list of tuples to dict for world: [stages]. e.g.: [(1, 1), (1, 2), (2, 3)] -> {1: [1, 2], 2: [3]}
             for k, v in stages:
-                stage_dict.setdefault(k, []).append(v)
+                stage_dict.setdefault(int(k), []).append(int(v))
 
         # convert integers to envs
         stage_dict = {k: [SuperMarioBrosEnv(
