@@ -18,7 +18,10 @@ pipeline {
                 echo "Building ${env.PROJECT_NAME} on ${env.JENKINS_URL}..."
                 sh "mkdir ${env.DEPLOY_DIR_NAME}"
 
-                // found here: https://stackoverflow.com/questions/4612157/how-to-use-mv-command-to-move-files-except-those-in-a-specific-directory
+                // moves all files in a directory into a subdirectory
+                // all the extra weirdness is there because just doing "mv *" will attempt to move the subdirectory
+                // into itself, which gives you an error ...
+                // solution was found here: https://stackoverflow.com/questions/4612157/how-to-use-mv-command-to-move-files-except-those-in-a-specific-directory
                 sh "ls | grep -v ${DEPLOY_DIR_NAME} | xargs -t -I '{}' mv {} ${DEPLOY_DIR_NAME}"
 
                 sh "tar -czvf ${env.PROJECT_NAME}.tar.gz ${env.DEPLOY_DIR_NAME}"
@@ -47,7 +50,6 @@ pipeline {
                         scp ${env.PROJECT_NAME}.tar.gz ${env.DEPLOY_SERVER}:${env.TARGET_DIR}
 
                         ssh -t -t ${env.DEPLOY_SERVER} << EOF
-                        pwd
                         cd ${env.TARGET_DIR}
                         tar -xf ${env.DEPLOY_DIR_NAME}.tar.gz
                         cd ${env.DEPLOY_DIR_NAME}

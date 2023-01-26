@@ -1,7 +1,19 @@
-"""An OpenAI Gym Super Mario Bros. environment that randomly selects levels."""
+"""
+An OpenAI Gym Super Mario Bros. environment that randomly selects levels.
+
+Original version took ages to load because it was initialising every single environment (even if not needed!). New
+version initialises environments lazily.
+
+Original version can be found here:
+https://github.com/Kautenja/gym-super-mario-bros/blob/master/gym_super_mario_bros/smb_random_stages_env.py
+"""
+from typing import Optional
+
 import gym
 import numpy as np
 from .smb_env import SuperMarioBrosEnv
+
+from itertools import chain
 
 
 class SuperMarioBrosRandomStagesEnv(gym.Env):
@@ -19,7 +31,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
     # action space is a bitmap of button press values for the 8 NES buttons
     action_space = SuperMarioBrosEnv.action_space
 
-    def __init__(self, rom_mode='vanilla', stages=None):
+    def __init__(self, rom_mode='vanilla', stages=None, render_mode: Optional[str] = None):
         """
         Initialize a new Super Mario Bros environment.
 
@@ -33,33 +45,56 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
         """
         # create a dedicated random number generator for the environment
         self.np_random = np.random.RandomState()
-        # setup the environments
-        self.envs = []
-        # iterate over the worlds in the game, i.e., {1, ..., 8}
-        for world in range(1, 9):
-            # append a new list to put this world's stages into
-            self.envs.append([])
-            # iterate over the stages in the world, i.e., {1, ..., 4}
-            for stage in range(1, 5):
-                # create the target as a tuple of the world and stage
-                target = (world, stage)
-                # create the environment with the given ROM mode
-                env = SuperMarioBrosEnv(rom_mode=rom_mode, target=target)
-                # add the environment to the stage list for this world
-                self.envs[-1].append(env)
+
+        # set rom_mode
+        self.rom_mode = rom_mode
+
+        # set render_mode
+        self.render_mode = render_mode
+
+        # setup the environments as a 1d arr
+        self.envs = self._make_envs(stages)
         # create a placeholder for the current environment
-        self.env = self.envs[0][0]
+        self.env = self.envs[0]
         # create a placeholder for the image viewer to render the screen
         self.viewer = None
         # create a placeholder for the subset of stages to choose
         self.stages = stages
+
+    def _make_envs(self, stages):
+
+        stage_dict = {}
+
+        # if stages is None, then assume select from any stage - return all stages (worlds 1 to 8, stages 1 to 4)
+        if not stages:
+            stage_dict = {str(i): list(map(lambda x: str(x), range(1, 5))) for i in range(1, 9)}
+
+        else:
+            # convert stages from str to tuple. e.g.: ['1-1', '1-2'] -> [(1, 1), (1,2)]
+            stages = list(map(lambda x: tuple(x.split("-")), stages))
+
+            stage_dict = {}
+
+            # convert list of tuples to dict for world: [stages]. e.g.: [(1, 1), (1, 2), (2, 3)] -> {1: [1, 2], 2: [3]}
+            for k, v in stages:
+                stage_dict.setdefault(k, []).append(v)
+
+        # convert integers to envs
+        stage_dict = {k: gym.make(f"SuperMarioBros-{k}-{v}-v{self.rom_mode}", render_mode=self.render_mode)
+                      for k, v in stage_dict.items()}
+
+        # flatten dict to 1d arr (easier to work with)
+        stages_list = [v for _, v in stage_dict.items()]
+        stages_list = list(chain.from_iterable(stages_list))
+
+        return stages_list
 
     @property
     def screen(self):
         """Return the screen from the underlying environment"""
         return self.env.screen
 
-    def seed(self, seed=None):
+    def _seed(self, seed=None):
         """
         Set the seed for this environment's random number generator.
 
@@ -79,7 +114,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
         # return the list of seeds used by RNG(s) in the environment
         return [seed]
 
-    def reset(self, seed=None, options=None, return_info=None):
+    def reset(self, seed=None, options=None):
         """
         Reset the state of the environment and returns an initial observation.
 
@@ -88,34 +123,20 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
             options (dict): An optional options for resetting the environment.
                 Can include the key 'stages' to override the random set of
                 stages to sample from.
-            return_info (any): unused
 
         Returns:
             state (np.ndarray): next frame as a result of the given action
 
         """
         # Seed the RNG for this environment.
-        self.seed(seed)
-        # Get the collection of stages to sample from
-        stages = self.stages
-        if options is not None and 'stages' in options:
-            stages = options['stages']
-        # Select a random level
-        if stages is not None and len(stages) > 0:
-            level = self.np_random.choice(stages)
-            world, stage = level.split('-')
-            world = int(world) - 1
-            stage = int(stage) - 1
-        else:
-            world = self.np_random.randint(1, 9) - 1
-            stage = self.np_random.randint(1, 5) - 1
-        # Set the environment based on the world and stage.
-        self.env = self.envs[world][stage]
+        self._seed(seed)
+
+        # choose random environment
+        self.env = self.np_random.choice(self.envs)
         # reset the environment
         return self.env.reset(
             seed=seed,
             options=options,
-            return_info=return_info
         )
 
     def step(self, action):
@@ -152,7 +173,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
         if self.viewer is not None:
             self.viewer.close()
 
-    def render(self, mode='human'):
+    def render(self):
         """
         Render the environment.
 
@@ -166,7 +187,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
             a numpy array if mode is 'rgb_array', None otherwise
 
         """
-        return SuperMarioBrosEnv.render(self, mode=mode)
+        return SuperMarioBrosEnv.render(self)
 
     def get_keys_to_action(self):
         """Return the dictionary of keyboard keys to actions."""
