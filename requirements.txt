@@ -4,6 +4,7 @@ nes-py>=8.0.0
 numpy==1.24.1
 opencv-python==4.7.0.68
 pygame>=1.9.3
+pyglet~=2.0.3
 setuptools==66.1.1
 tqdm>=4.19.5
 twine>=1.11.0

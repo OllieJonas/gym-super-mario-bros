@@ -53,8 +53,8 @@ class SuperMarioBrosEnv(NESEnv):
         # initialize the super object with the ROM path
         super(SuperMarioBrosEnv, self).__init__(rom, render_mode=render_mode)
         # set the target world, stage, and area variables
-        target = decode_target(target, lost_levels)
-        self._target_world, self._target_stage, self._target_area = target
+        self.target = decode_target(target, lost_levels)
+        self._target_world, self._target_stage, self._target_area = self.target
         # setup a variable to keep track of the last frames time
         self._time_last = 0
         # setup a variable to keep track of the last frames x position

@@ -84,7 +84,7 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
             target=(k, i),
             rom_mode=self.rom_mode,
             render_mode=self.render_mode) for i in v]
-                      for k, v in stage_dict.items()}
+            for k, v in stage_dict.items()}
 
         # flatten dict to 1d arr (easier to work with)
         stages_list = [v for _, v in stage_dict.items()]
