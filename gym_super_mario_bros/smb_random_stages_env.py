@@ -63,8 +63,6 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
 
     def _make_envs(self, stages):
 
-        stage_dict = {}
-
         # if stages is None, then assume select from any stage - return all stages (worlds 1 to 8, stages 1 to 4)
         if not stages:
             stage_dict = {i: list(range(1, 5)) for i in range(1, 9)}
@@ -179,13 +177,6 @@ class SuperMarioBrosRandomStagesEnv(gym.Env):
     def render(self):
         """
         Render the environment.
-
-        Args:
-            mode (str): the mode to render with:
-            - human: render to the current display
-            - rgb_array: Return an numpy.ndarray with shape (x, y, 3),
-              representing RGB values for an x-by-y pixel image
-
         Returns:
             a numpy array if mode is 'rgb_array', None otherwise
 
