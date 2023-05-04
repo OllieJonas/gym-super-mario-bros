@@ -5,7 +5,7 @@ import gym
 from nes_py.wrappers import JoypadSpace
 from nes_py.app.play_human import play_human
 from nes_py.app.play_random import play_random
-from ..actions import RIGHT_ONLY, SIMPLE_MOVEMENT, COMPLEX_MOVEMENT
+from gym_super_mario_bros.actions import RIGHT_ONLY, SIMPLE_MOVEMENT, COMPLEX_MOVEMENT
 
 # a key mapping of action spaces to wrap with
 _ACTION_SPACES = {
@@ -31,7 +31,7 @@ def _get_args():
                         )
     parser.add_argument('--actionspace', '-a',
                         type=str,
-                        default='complex',
+                        default='simple',
                         choices=['nes', 'right', 'simple', 'complex'],
                         help='the action space wrapper to use'
                         )
@@ -74,3 +74,6 @@ def main():
 
 # explicitly define the outward facing API of this module
 __all__ = [main.__name__]
+
+if __name__ == "__main__":
+    main()

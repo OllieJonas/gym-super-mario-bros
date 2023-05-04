@@ -50,6 +50,8 @@ class SuperMarioBrosEnv(NESEnv):
         """
         # decode the ROM path based on mode and lost levels flag
         rom = rom_path(lost_levels, rom_mode)
+
+        self._cumulative_reward = 0
         # initialize the super object with the ROM path
         super(SuperMarioBrosEnv, self).__init__(rom, render_mode=render_mode)
         # set the target world, stage, and area variables
@@ -215,7 +217,8 @@ class SuperMarioBrosEnv(NESEnv):
     @property
     def _is_dead(self):
         """Return True if Mario is dead, False otherwise."""
-        return self._player_state == 0x06
+        is_dead = self._player_state == 0x06
+        return is_dead
 
     @property
     def _is_game_over(self):
@@ -255,7 +258,13 @@ class SuperMarioBrosEnv(NESEnv):
     @property
     def _flag_get(self):
         """Return a boolean determining if the agent reached a flag."""
-        return self._is_world_over or self._is_stage_over
+        flag_get = self._is_world_over or self._is_stage_over
+
+        if flag_get:
+            print(f"finished! cumulative reward: {self._cumulative_reward}")
+            self._cumulative_reward = 0
+
+        return flag_get
 
     # MARK: RAM Hacks
 
@@ -352,7 +361,7 @@ class SuperMarioBrosEnv(NESEnv):
     def _death_penalty(self):
         """Return the reward earned by dying."""
         if self._is_dying or self._is_dead:
-            return -25
+            return -100
 
         return 0
 
@@ -360,11 +369,13 @@ class SuperMarioBrosEnv(NESEnv):
 
     def _will_reset(self):
         """Handle and RAM hacking before a reset occurs."""
+        print(f"cumulative reward: {self._cumulative_reward}")
         self._time_last = 0
         self._x_position_last = 0
 
     def _did_reset(self):
         """Handle any RAM hacking after a reset occurs."""
+        self._cumulative_reward = 0
         self._time_last = self._time
         self._x_position_last = self._x_position
 
@@ -391,8 +402,18 @@ class SuperMarioBrosEnv(NESEnv):
         self._skip_occupied_states()
 
     def _get_reward(self):
-        """Return the reward after a step occurs."""
-        return self._x_reward + self._time_penalty + self._death_penalty
+        """Return the reward after a step occurs.
+           Ollie: Modifications of reward function have been made here (see Reward Function section in dissertation)
+        """
+        if self._death_penalty != 0:
+            print(f"lives remaining: {int(self._life)}")
+            return self._death_penalty
+
+        finished_level = 50 if self._flag_get else 0
+
+        reward = self._x_reward + self._time_penalty + self._death_penalty + finished_level
+        self._cumulative_reward += reward
+        return reward
 
     def _get_terminated(self):
         """Return True if the episode is over, False otherwise."""
